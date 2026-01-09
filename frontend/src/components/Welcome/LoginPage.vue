@@ -1,5 +1,26 @@
 <script setup>
-import {User,Lock} from '@element-plus/icons-vue'
+import {User, Lock} from '@element-plus/icons-vue'
+import {reactive} from "vue";
+import {ElMessage} from "element-plus";
+import {post} from "@/net/index.js";
+import router from "@/router/index.js";
+
+const form = reactive({
+  username: '',
+  password: '',
+  remember: false
+})
+
+const login = () => {
+  if (!form.password || !form.password) {
+    ElMessage.warning('请填写用户名或者密码')
+  } else {
+    post('/api/auth/login', {username: form.username, password: form.password, remember: form.remember}, (message) => {
+      ElMessage.success(message)
+      router.push('/index')
+    })
+  }
+}
 </script>
 
 <template>
@@ -9,15 +30,15 @@ import {User,Lock} from '@element-plus/icons-vue'
       <div style="font-size: 14px;color: grey">请先登陆</div>
     </div>
     <div style="margin-top: 100px">
-      <el-input type="text" placeholder="用户名/邮箱" :prefix-icon="User"/>
+      <el-input v-model="form.username" type="text" placeholder="用户名/邮箱" :prefix-icon="User"/>
     </div>
     <div style="margin-top: 20px">
-      <el-input type="password" placeholder="密码" :prefix-icon="Lock"/>
+      <el-input v-model="form.password" type="password" placeholder="密码" :prefix-icon="Lock"/>
     </div>
     <div style="margin-top: 10px">
       <el-row>
         <el-col :span="12" style="text-align: left;">
-          <el-checkbox v-model="checked1" label="自动登录" size="large"/>
+          <el-checkbox v-model="form.remember" label="自动登录" size="large"/>
         </el-col>
         <el-col :span="12" style="text-align: right;">
           <el-link>忘记密码</el-link>
@@ -25,7 +46,7 @@ import {User,Lock} from '@element-plus/icons-vue'
       </el-row>
     </div>
     <div style="margin-top: 30px">
-      <el-button style="width: 200px" type="success" plain>登录</el-button>
+      <el-button @click="login()" style="width: 200px" type="success" plain>登录</el-button>
     </div>
     <el-divider>
       <span style="color: grey; font-size: 12px">还没账号?</span>
