@@ -16,16 +16,21 @@
         酥咔手敲制作
       </div>
     </div>
-    <div style="width : 400px;background-color: white">
-      <router-view/>
+    <div style="width : 400px;background-color: white;z-index: 1">
+      <router-view v-slot="{Component}">
+        <transition name="el-fade-in-linear">
+          <component :is="Component"></component>
+        </transition>
+      </router-view>
+
     </div>
   </div>
 </template>
 
 <style scoped>
-.welcometitle{
+.welcometitle {
   position: absolute;
-  bottom: 30px ;
+  bottom: 30px;
   left: 30px;
   color: white;
   text-shadow: 0 0 10px black;
