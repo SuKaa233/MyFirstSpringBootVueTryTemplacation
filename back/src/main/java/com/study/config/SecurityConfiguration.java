@@ -41,7 +41,9 @@ public class SecurityConfiguration {
     SecurityFilterChain chain(HttpSecurity http) {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(a -> a.anyRequest().authenticated())
+                .authorizeHttpRequests(a -> a
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .anyRequest().authenticated())
                 .formLogin(f -> f
                         .failureHandler(this::AuthenticationFailureHandler)
                         .loginProcessingUrl("/api/auth/login")
@@ -65,7 +67,7 @@ public class SecurityConfiguration {
         JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
         //noinspection removal
         tokenRepository.setDataSource(dataSource);
-        tokenRepository.setCreateTableOnStartup(true);
+        tokenRepository.setCreateTableOnStartup(false);//第一次运行记得打开
         return tokenRepository;
     }
 
@@ -73,10 +75,10 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowCredentials(true);
         cfg.addAllowedOrigin("http://localhost:5173"); // 前端端口
         cfg.addAllowedHeader("*");
         cfg.addAllowedMethod("*");
-        cfg.setAllowCredentials(false);//第一次运行记得打开 留给以后的自己
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);
         return src;

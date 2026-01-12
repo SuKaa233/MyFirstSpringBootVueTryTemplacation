@@ -4,3 +4,17 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/bookwebsql?useUnicode=true&characterEncoding=utf-8
     username: root
     password: wanghaoran050327
+  mail:
+    host: smtp.qq.com
+    username: 2579362548@qq.com
+    password: iowwshwemrjjdhii
+    port: 465
+    protocol: smtps
+    properties:
+        mail.smtps.auth: true
+        mail.smtps.ssl.enable: true
+  data:
+    redis:
+      database: 0
+      host: localhost
+      port: 6379
