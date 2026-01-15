@@ -77,8 +77,10 @@ const register = () => {
   })
 }
 
+const coldTime = ref(0)
+
 const validateEmail = () => {
-  post('/api/auth/valid-email'
+  post('/api/auth/valid-register-email'
       ,{email: form.email}
       ,(message)=>{ElMessage.success(message)
         coldTime.value=60
@@ -86,7 +88,7 @@ const validateEmail = () => {
   })
 }
 
-const coldTime = ref(0)
+
 </script>
 
 <template>

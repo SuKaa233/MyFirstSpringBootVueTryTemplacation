@@ -51,11 +51,14 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     }
 
     @Override
-    public String sendValidationEmail(String email, String sessionId) {
-        if(mapper.findAccountByNameOrEmail(email) != null){
+    public String sendValidationEmail(String email, String sessionId,boolean hasAccount) {
+        Account account = mapper.findAccountByNameOrEmail(email);
+        if(hasAccount && account == null)
+            return "没有此用户";
+        if(!hasAccount && account != null){
             return "此邮箱已经被其他用户注册";
         }
-        String key = "email:" + email + ":" + sessionId;
+        String key = "email:" + email + ":" + sessionId + ":" + hasAccount;
         if(Boolean.TRUE.equals(stringRedisTemplate.hasKey(key))){
             Long expire = Optional.ofNullable(stringRedisTemplate.getExpire(key, TimeUnit.SECONDS)).orElse(0L);
             if(expire > 120){
@@ -71,7 +74,8 @@ public class AuthorizeServiceImpl implements AuthorizeService {
         message.setText(code);
         try {
             mailSender.send(message);
-            stringRedisTemplate.opsForValue().set(email,code,3,TimeUnit.MINUTES);
+            String emailPlus =  email + ":" + hasAccount;
+            stringRedisTemplate.opsForValue().set(emailPlus,code,3,TimeUnit.MINUTES);
             stringRedisTemplate.opsForValue().set(key, code,3, TimeUnit.MINUTES);
             return null;
         }catch (MailException e){
@@ -82,13 +86,15 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 
     @Override
     public String validateAndRegister(String username, String password, String email, String code,String sessionId) {
-        if(Boolean.TRUE.equals(stringRedisTemplate.hasKey(email))){
-            String s = stringRedisTemplate.opsForValue().get(email);
+        String emailPlus =  email + ":" +"false";
+        if(Boolean.TRUE.equals(stringRedisTemplate.hasKey(emailPlus))){
+            String s = stringRedisTemplate.opsForValue().get(emailPlus);
             if(s==null){
                 return "验证码失效";
             }
             if (s.equals(code)){
                 password=bCryptPasswordEncoder.encode(password);
+                stringRedisTemplate.delete(emailPlus);
                 if(mapper.creatAccount(username,password,email) > 0){
                     return null;
                 }else{
@@ -100,5 +106,29 @@ public class AuthorizeServiceImpl implements AuthorizeService {
         }else {
             return "请先获取验证码";
         }
+    }
+    @Override
+    public String validateOnly(String email, String code, String sessionId) {
+        String emailPlus =  email + ":" + "true";
+        if(Boolean.TRUE.equals(stringRedisTemplate.hasKey(emailPlus))){
+            String s = stringRedisTemplate.opsForValue().get(emailPlus);
+            if(s==null){
+                return "验证码失效";
+            }
+            if (s.equals(code)){
+                stringRedisTemplate.delete(emailPlus);
+                return null;
+            }else {
+                return "验证码错误";
+            }
+        }else {
+            return "请先获取验证码";
+        }
+    }
+
+    @Override
+    public boolean resetPassword(String email, String password) {
+        password=bCryptPasswordEncoder.encode(password);
+        return  mapper.resetPassword(password,email) > 0;
     }
 }
