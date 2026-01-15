@@ -1,6 +1,6 @@
 package com.study.service.impl;
 
-import com.study.entity.Account;
+import com.study.entity.auth.Account;
 import com.study.mapper.UserMapper;
 import com.study.service.AuthorizeService;
 import jakarta.annotation.Resource;
